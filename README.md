@@ -1,5 +1,5 @@
-# wmmt-freecam-dll
-WMMT DLL injection for freecam, since using Cheat Engine gives a jittery camera!
+# wmmt-camera-toys
+WMMT DLL injection for freecam (and other camera goodies), since using Cheat Engine gives a jittery camera!
 <h1>Setting up the solution</h1>
 <ul>
   <li>Download and install <a href="https://www.microsoft.com/en-us/download/details.aspx?id=6812">DirectX SDK</a></li>
