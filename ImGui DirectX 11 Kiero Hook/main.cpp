@@ -7,7 +7,7 @@ WNDPROC oWndProc;
 ID3D11Device* pDevice = NULL;
 ID3D11DeviceContext* pContext = NULL;
 ID3D11RenderTargetView* mainRenderTargetView;
-uintptr_t imageBase;
+static uintptr_t imageBase;
 
 inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
 {
@@ -62,9 +62,19 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui::NewFrame();
 
 	ImGui::Begin("ImGui Window");
+	if (ImGui::Button("Toggle Freeze Cam")) {
+		if (*(byte*)(imageBase + 0xE9936) != (byte)1) {
+			injector::WriteMemory<BYTE>(imageBase + 0xE9936, 0x01, true);
+		}
+		else {
+			injector::WriteMemory<BYTE>(imageBase + 0xE9936, 0x00, true);
+		}
+	}
 	ImGui::End();
-
 	ImGui::Render();
+
+	
+	
 
 	pContext->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -96,7 +106,6 @@ BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hMod);
 		imageBase = (uintptr_t)GetModuleHandleA(0);
-		safeJMP(imageBase + 0x72AB90 ,returnTrue);
 		CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
 		break;
 	case DLL_PROCESS_DETACH:
