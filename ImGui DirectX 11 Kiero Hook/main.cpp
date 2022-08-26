@@ -9,11 +9,23 @@ ID3D11DeviceContext* pContext = NULL;
 ID3D11RenderTargetView* mainRenderTargetView;
 static uintptr_t imageBase;
 
+//counter for safeJMP cheats
+static long int hcamCounter = 0;
+
+//buffer for safeJMP cheats
+unsigned char hoodCamHook[0x7]; //buffer for hook patch, since safeJMP only works once
+
+
 inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
 {
 	MH_Initialize();
 	MH_CreateHook((void*)at.as_int(), (void*)dest.as_int(), nullptr);
 	MH_EnableHook((void*)at.as_int());
+}
+
+inline void safeUNJMP(injector::memory_pointer_tr pTarget) {
+	MH_DisableHook((void*)pTarget.as_int());
+	MH_RemoveHook((void*)pTarget.as_int());
 }
 
 void InitImGui()
@@ -23,6 +35,43 @@ void InitImGui()
 	io.ConfigFlags = ImGuiConfigFlags_NoMouseCursorChange;
 	ImGui_ImplWin32_Init(window);
 	ImGui_ImplDX11_Init(pDevice, pContext);
+}
+
+static int returnTrue() {
+	return 1;
+}
+
+static void hoodcamFunc() {
+	uintptr_t node = imageBase + 0x1F52470; //base ptr for coords
+
+	//calc pointers for rest of the coords
+	float calcX = *(float*)(node);
+	float calcY = *(float*)(node + 4);
+	float calcZ = *(float*)(node + 8);
+
+	//offset values for hoodcam :>
+	float offsetval = 0;
+	float offsetval2 = 0;
+	float offsetval3 = 10.5;
+
+	//multilevel pointer base for player coords, spaghetti code
+	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2);
+
+	float carx = *(float*)(node2 + 0x1D4);
+	float cary = *(float*)(node2 + 0x1D8);
+	float carz = *(float*)(node2 + 0x1DC);
+
+	calcX = carx + offsetval;
+	calcY = cary + offsetval3;
+	calcZ = carz + offsetval2;
+
+
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52470, calcX, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52474, calcY, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52478, calcZ, true);
 }
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -61,7 +110,8 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::Begin("ImGui Window");
+	ImGui::Begin("Camera Toys");
+	//freeze cam button
 	if (ImGui::Button("Toggle Freeze Cam")) {
 		if (*(byte*)(imageBase + 0xE9936) != (byte)1) {
 			injector::WriteMemory<BYTE>(imageBase + 0xE9936, 0x01, true);
@@ -69,6 +119,16 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		else {
 			injector::WriteMemory<BYTE>(imageBase + 0xE9936, 0x00, true);
 		}
+	}
+	//hoodcam button
+	if (ImGui::Button("Toggle Hood Cam")) {
+		if (*(byte*)(imageBase + 0xE995D) == (byte)0x0F) { //checks if hack is disabled or not (0x0f is disabled)
+			safeJMP(imageBase + 0xE995D, hoodcamFunc, true);
+		}
+		else {
+			safeUNJMP(imageBase + 0xE995D);
+		}
+		hcamCounter++;
 	}
 	ImGui::End();
 	ImGui::Render();
@@ -95,42 +155,7 @@ DWORD WINAPI MainThread(LPVOID lpReserved)
 	return TRUE;
 }
 
-static int returnTrue() {
-	return 1;
-}
 
-static void hoodcamFunc() {
-	uintptr_t node = imageBase + 0x1F52470; //base ptr for coords
-
-	//calc pointers for rest of the coords
-	float calcX = *(float*)(node);
-	float calcY = *(float*)(node + 4);
-	float calcZ = *(float*)(node + 8); 
-
-	//offset values for hoodcam :>
-	float offsetval = 0;
-	float offsetval2 = 0;
-	float offsetval3 = 10.5;
-
-	//multilevel pointer base for player coords, spaghetti code
-	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
-	node2 = *(uintptr_t*)(node2 + 0x8);
-	node2 = *(uintptr_t*)(node2 + 0x8);
-	node2 = *(uintptr_t*)(node2);
-
-	float carx = *(float*)(node2 + 0x1D4);
-	float cary = *(float*)(node2 + 0x1D8);
-	float carz = *(float*)(node2 + 0x1DC);
-
-	calcX = carx + offsetval;
-	calcY = cary + offsetval3;
-	calcZ = carz + offsetval2;
-
-
-	injector::WriteMemory<FLOAT>(imageBase + 0x1F52470, calcX, true);
-	injector::WriteMemory<FLOAT>(imageBase + 0x1F52474, calcY, true);
-	injector::WriteMemory<FLOAT>(imageBase + 0x1F52478, calcZ, true);
-}
 
 BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 {
@@ -139,7 +164,6 @@ BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hMod);
 		imageBase = (uintptr_t)GetModuleHandleA(0);
-		safeJMP(imageBase + 0xE995D, hoodcamFunc, false);
 		CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
 		break;
 	case DLL_PROCESS_DETACH:
