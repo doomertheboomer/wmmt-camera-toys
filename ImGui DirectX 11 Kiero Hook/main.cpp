@@ -7,6 +7,7 @@ WNDPROC oWndProc;
 ID3D11Device* pDevice = NULL;
 ID3D11DeviceContext* pContext = NULL;
 ID3D11RenderTargetView* mainRenderTargetView;
+uintptr_t imageBase;
 
 inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
 {
@@ -84,12 +85,18 @@ DWORD WINAPI MainThread(LPVOID lpReserved)
 	return TRUE;
 }
 
+static int returnTrue() {
+	return 1;
+}
+
 BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 {
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hMod);
+		imageBase = (uintptr_t)GetModuleHandleA(0);
+		safeJMP(imageBase + 0x72AB90 ,returnTrue);
 		CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
 		break;
 	case DLL_PROCESS_DETACH:
