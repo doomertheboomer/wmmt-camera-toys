@@ -8,6 +8,13 @@ ID3D11Device* pDevice = NULL;
 ID3D11DeviceContext* pContext = NULL;
 ID3D11RenderTargetView* mainRenderTargetView;
 
+inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
+{
+	MH_Initialize();
+	MH_CreateHook((void*)at.as_int(), (void*)dest.as_int(), nullptr);
+	MH_EnableHook((void*)at.as_int());
+}
+
 void InitImGui()
 {
 	ImGui::CreateContext();
