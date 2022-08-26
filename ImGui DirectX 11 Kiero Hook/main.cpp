@@ -112,7 +112,7 @@ static void hoodcamFunc() {
 	float offsetval2 = 0;
 	float offsetval3 = 10.5;
 
-	//multilevel pointer base for player coords spaghetti code
+	//multilevel pointer base for player coords, spaghetti code
 	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
 	node2 = *(uintptr_t*)(node2 + 0x8);
 	node2 = *(uintptr_t*)(node2 + 0x8);
@@ -122,9 +122,14 @@ static void hoodcamFunc() {
 	float cary = *(float*)(node2 + 0x1D8);
 	float carz = *(float*)(node2 + 0x1DC);
 
-	injector::WriteMemory<FLOAT>(calcX, (carx + offsetval), false);
-	injector::WriteMemory<FLOAT>(calcY, (cary + offsetval2), false);
-	injector::WriteMemory<FLOAT>(calcZ, (carz + offsetval3), false);
+	calcX = carx + offsetval;
+	calcY = cary + offsetval3;
+	calcZ = carz + offsetval2;
+
+
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52470, calcX, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52474, calcY, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52478, calcZ, true);
 }
 
 BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
