@@ -121,6 +121,27 @@
     <ClInclude Include="includes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="kiero\injector\assembly.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\calling.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\gvm\gvm.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\gvm\translator.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\hooking.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\injector.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero\injector\utility.hpp">
+      <Filter>kiero</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="kiero\minhook\dll_resources\MinHook.def">

@@ -173,6 +173,13 @@
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="includes.h" />
+    <ClInclude Include="kiero\injector\assembly.hpp" />
+    <ClInclude Include="kiero\injector\calling.hpp" />
+    <ClInclude Include="kiero\injector\gvm\gvm.hpp" />
+    <ClInclude Include="kiero\injector\gvm\translator.hpp" />
+    <ClInclude Include="kiero\injector\hooking.hpp" />
+    <ClInclude Include="kiero\injector\injector.hpp" />
+    <ClInclude Include="kiero\injector\utility.hpp" />
     <ClInclude Include="kiero\kiero.h" />
     <ClInclude Include="kiero\minhook\include\MinHook.h" />
     <ClInclude Include="kiero\minhook\src\buffer.h" />

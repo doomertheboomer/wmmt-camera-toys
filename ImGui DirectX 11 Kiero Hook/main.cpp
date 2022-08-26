@@ -99,6 +99,34 @@ static int returnTrue() {
 	return 1;
 }
 
+static void hoodcamFunc() {
+	uintptr_t node = imageBase + 0x1F52470; //base ptr for coords
+
+	//calc pointers for rest of the coords
+	float calcX = *(float*)(node);
+	float calcY = *(float*)(node + 4);
+	float calcZ = *(float*)(node + 8); 
+
+	//offset values for hoodcam :>
+	float offsetval = 0;
+	float offsetval2 = 0;
+	float offsetval3 = 10.5;
+
+	//multilevel pointer base for player coords spaghetti code
+	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2);
+
+	float carx = *(float*)(node2 + 0x1D4);
+	float cary = *(float*)(node2 + 0x1D8);
+	float carz = *(float*)(node2 + 0x1DC);
+
+	injector::WriteMemory<FLOAT>(calcX, (carx + offsetval), false);
+	injector::WriteMemory<FLOAT>(calcY, (cary + offsetval2), false);
+	injector::WriteMemory<FLOAT>(calcZ, (carz + offsetval3), false);
+}
+
 BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 {
 	switch (dwReason)
@@ -106,6 +134,7 @@ BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 	case DLL_PROCESS_ATTACH:
 		DisableThreadLibraryCalls(hMod);
 		imageBase = (uintptr_t)GetModuleHandleA(0);
+		safeJMP(imageBase + 0xE995D, hoodcamFunc, false);
 		CreateThread(nullptr, 0, MainThread, hMod, 0, nullptr);
 		break;
 	case DLL_PROCESS_DETACH:
