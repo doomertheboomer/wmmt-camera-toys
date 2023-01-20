@@ -8,5 +8,9 @@ WMMT DLL injection for freecam (and other camera goodies), since using Cheat Eng
   <li>Now go to VC++ Directories -> Library Directories. Click on 'Edit' and select the library folder <br/> located on your DirectX SDK installation path. It is generally this one - choose x86 for 32bit and x64 for 64bit: <br/>%programfiles(x86)%\Microsoft DirectX SDK (June 2010)\Lib\</li>
   <li><b>Done!</b></li>
 </ul>
+<h1>Usage</h1>
+Inject to WMMT5DX+ with your fav injector (Cheat Engine works if you have that)
+
+
 <h2>Kiero</h2>
 <p>You can find Kiero's official repository <a href="https://github.com/Rebzzel/kiero">here</a>
