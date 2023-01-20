@@ -9,12 +9,10 @@ ID3D11DeviceContext* pContext = NULL;
 ID3D11RenderTargetView* mainRenderTargetView;
 static uintptr_t imageBase;
 
-//counter for safeJMP cheats
-static long int hcamCounter = 0;
-
-//buffer for safeJMP cheats
-unsigned char hoodCamHook[0x7]; //buffer for hook patch, since safeJMP only works once
-
+//offset values for freecam :>
+float offsetval = 0;
+float offsetval2 = 0;
+float offsetval3 = 10.5;
 
 inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
 {
@@ -48,11 +46,6 @@ static void hoodcamFunc() {
 	float calcX = *(float*)(node);
 	float calcY = *(float*)(node + 4);
 	float calcZ = *(float*)(node + 8);
-
-	//offset values for hoodcam :>
-	float offsetval = 0;
-	float offsetval2 = 0;
-	float offsetval3 = 10.5;
 
 	//multilevel pointer base for player coords, spaghetti code
 	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
@@ -128,8 +121,12 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		else {
 			safeUNJMP(imageBase + 0xE995D);
 		}
-		hcamCounter++;
 	}
+	//offset sliders
+	ImGui::SliderFloat("Offset X", &offsetval, -100.f, 100.f);
+	ImGui::SliderFloat("Offset Y", &offsetval3, -100.f, 100.f);
+	ImGui::SliderFloat("Offset Z", &offsetval2, -100.f, 100.f);
+
 	ImGui::End();
 	ImGui::Render();
 
