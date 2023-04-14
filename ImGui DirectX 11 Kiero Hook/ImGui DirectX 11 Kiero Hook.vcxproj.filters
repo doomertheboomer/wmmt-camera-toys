@@ -19,6 +19,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{3ba57e14-8ac2-485a-b12c-f06690c43d6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doomer">
+      <UniqueIdentifier>{3811f743-d2ac-42a5-b4cd-af440c8a5f7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="kiero\minhook\src\buffer.c">
@@ -59,6 +62,9 @@
     </ClCompile>
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="doomer\mathTools.cpp">
+      <Filter>doomer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +147,9 @@
     </ClInclude>
     <ClInclude Include="kiero\injector\utility.hpp">
       <Filter>kiero</Filter>
+    </ClInclude>
+    <ClInclude Include="doomer\mathTools.h">
+      <Filter>doomer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

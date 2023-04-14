@@ -13,6 +13,8 @@ static uintptr_t imageBase;
 float offsetval = 0;
 float offsetval2 = 0;
 float offsetval3 = 10.5;
+float orbitDeg = 0;
+bool orbitEnabled = false;
 
 inline void safeJMP(injector::memory_pointer_tr at, injector::memory_pointer_raw dest, bool vp = true)
 {
@@ -65,6 +67,68 @@ static void hoodcamFunc() {
 	injector::WriteMemory<FLOAT>(imageBase + 0x1F52470, calcX, true);
 	injector::WriteMemory<FLOAT>(imageBase + 0x1F52474, calcY, true);
 	injector::WriteMemory<FLOAT>(imageBase + 0x1F52478, calcZ, true);
+}
+
+static void orbitcamFunc() {
+	uintptr_t node = imageBase + 0x1F52470; //base ptr for cam coords
+
+	//calc pointers for rest of the coords
+	float camX = *(float*)(node);
+	float camY = *(float*)(node + 4);
+	float camZ = *(float*)(node + 8);
+
+	//multilevel pointer base for player coords, spaghetti code
+	uintptr_t node2 = *(uintptr_t*)(imageBase + 0x1F52270);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2 + 0x8);
+	node2 = *(uintptr_t*)(node2);
+
+	float carX = *(float*)(node2 + 0x1D4);
+	float carY = *(float*)(node2 + 0x1D8);
+	float carZ = *(float*)(node2 + 0x1DC);
+	
+	//WIP: INSERT KEYBOARD NAD MOUSE BINDINGS HERE
+
+	//calculate regular rot with car coords, based on x rot
+	float calcX = (sin(rad(orbitDeg))*(-offsetval)) + carX;
+	float calcY = carY + (offsetval3);
+	float calcZ = (cos(rad(orbitDeg))*(offsetval)) + carZ;
+
+	//write cam coordinates
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52470, calcX, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52474, calcY, true);
+	injector::WriteMemory<FLOAT>(imageBase + 0x1F52478, calcZ, true);
+
+	//calc rot matrix
+	float* matrix;
+	matrix = (rotToMat(orbitDeg, 0, 0));
+
+	//write to game matrix
+	node = imageBase + 0x1F52470; //base ptr for matrix
+	injector::WriteMemoryRaw(node, matrix, 12, true);
+	injector::WriteMemoryRaw(node + 16, matrix + 12, 12, true);
+	injector::WriteMemoryRaw(node + 32, matrix + 24, 12, true);
+	
+	RECT desktop;
+	// Get a handle to the desktop window
+	const HWND hDesktop = GetDesktopWindow();
+	// Get the size of screen to the variable desktop
+	GetWindowRect(hDesktop, &desktop);
+	int screenx = desktop.right;
+
+	// Get mouse pos for panning
+	POINT p;
+	GetCursorPos(&p);
+
+	//mouse loopver
+	if (p.x == screenx - 1) {
+		SetCursorPos(1, p.y);
+	}
+	else if (p.x == 0) {
+		SetCursorPos(screenx - 2, p.y);
+	}
+
+	orbitDeg = ((p.x) / screenx) * 720;
 }
 
 LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -122,6 +186,19 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			safeUNJMP(imageBase + 0xE995D);
 		}
 	}
+
+	//orbitcam button
+	if (ImGui::Button("Toggle Orbit Cam")) {
+		if (*(byte*)(imageBase + 0xE9930) == (byte)0x80) { //checks if hack is disabled or not (0x0f is disabled)
+			orbitEnabled = true;
+			safeJMP(imageBase + 0xE9930, orbitcamFunc, true);
+		}
+		else {
+			orbitEnabled = false;
+			safeUNJMP(imageBase + 0xE9930);
+		}
+	}
+
 	//offset sliders
 	ImGui::SliderFloat("Offset X", &offsetval, -100.f, 100.f);
 	ImGui::SliderFloat("Offset Y", &offsetval3, -100.f, 100.f);
